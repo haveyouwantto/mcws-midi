@@ -169,15 +169,15 @@ class MidiPlayer(threading.Thread, FileIOModule):
         await self.ws.send(message_utils.info(ref_strings.midiplayer.looping.format(self.config['loop'])))
 
     async def from_url(self, args):
-        # await self.ws.send(message_utils.info(ref_strings.pixel.download_image.format(args[0])))
+        await self.ws.send(message_utils.info(ref_strings.midiplayer.downloading.format(args[0])))
         if len(args) == 0:
             return
         code = downloader.download_midi(args[0])
         if code[0] == -1:
-            # await self.ws.send(message_utils.error(ref_strings.pixel.web_error.format(args[0])))
+            await self.ws.send(message_utils.error(ref_strings.midiplayer.web_error.format(args[0])))
             return
         if code[0] == 1:
-            # await self.ws.send(message_utils.error(ref_strings.pixel.mime_error.format(code[1])))
+            await self.ws.send(message_utils.error(ref_strings.midiplayer.mime_error.format(code[1])))
             return
         await self.open('midi/cache')
 
