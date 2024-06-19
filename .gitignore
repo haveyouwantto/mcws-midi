@@ -3,3 +3,5 @@ midi/
 config.json
 main.build/
 main.dist/
+build/
+dist/

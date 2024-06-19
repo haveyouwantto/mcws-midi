@@ -121,7 +121,8 @@ async def printEntries(ws, entries):
         try:
             start = entries['start']
             for i in range(10):
-                await ws.send(info(ref_strings.list_format.format(i + start, entries['entries'][i])))
+                color_code = "\u00a7f" if i % 2 == 0 else "\u00a77"
+                await ws.send(info(ref_strings.list_format.format(i + start, color_code,entries['entries'][i])))
             await ws.send(info(ref_strings.pagenum_format.format(
                 entries['page'], entries['maxpage'])))
         except IndexError:

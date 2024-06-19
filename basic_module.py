@@ -141,8 +141,9 @@ class FileIOModule(BaseModule):
                 if i > 20:
                     await self.ws.send(message_utils.info("...%d"%(len(results)-20)))
                     return 
+                color_code = "\u00a7f" if i % 2 == 0 else "\u00a77"
                 await self.ws.send(
-                    message_utils.info(ref_strings.list_format.format(entry[0], entry[1])))
+                    message_utils.info(ref_strings.list_format.format(entry[0],color_code, entry[1])))
                 i+=1
 
     async def open_file(self, args):
