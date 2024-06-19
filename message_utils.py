@@ -1,0 +1,169 @@
+import json
+import math
+import os
+
+import ref_strings
+
+import traceback
+import uuid
+import coloreplace
+
+log_command = False
+
+sub = json.dumps({
+    "body": {
+        "eventName": "PlayerMessage"
+    },
+    "header": {
+        "requestId": "00000000-0000-0000-0000-000000000000",
+        "messagePurpose": "subscribe",
+        "version": 1,
+        "messageType": "commandRequest"
+    }
+})
+
+
+def autocmd(line):
+    return cmd(line, str(uuid.uuid4()))
+
+
+def cmd(line, uuid):
+    if log_command:
+        print(coloreplace.replace(line))
+    return json.dumps({
+        "body": {
+            "origin": {
+                "type": "player"
+            },
+            "commandLine": line,
+            "version": 1
+        },
+        "header": {
+            "requestId": uuid,
+            "messagePurpose": "commandRequest",
+            "version": 1,
+            "messageType": "commandRequest"
+        }
+    })
+
+
+def getChat(msg):
+    return msg["body"]["message"]
+
+
+def log(msg):
+    print(coloreplace.replace(str(msg)))
+
+
+def info(msg):
+    print(coloreplace.replace(str(msg)))
+    return autocmd("tellraw @a %s"%(json.dumps(
+        {"rawtext":[{"text":msg}]}
+    )))
+
+
+def warning(msg):
+    return autocmd("tellraw @a %s"%(json.dumps(
+        {"rawtext":[{"text":"\u00a7e"+msg}]}
+    )))
+
+
+def error(msg):
+    print(coloreplace.replace("\u00a7c" + str(msg)))
+    return autocmd("tellraw @a %s"%(json.dumps(
+        {"rawtext":[{"text":"\u00a7c"+str(msg)}]}
+    )))
+
+
+def drawKeyboard(key, start=0):
+    out = ""
+    i = start
+    while i < key:
+        if i % 12 == 1 or i % 12 == 3 or i % 12 == 6 or i % 12 == 8 or i % 12 == 10:
+            out += "\u00a70\u258F"
+        else:
+            out += "\u00a7f\u258F"
+        i += 1
+    return out
+
+
+def midiDisplay(midimsg):
+    out = '/titleraw @s actionbar {"rawtext":[{"text":"\u00a70'
+    i = 0
+    out += drawKeyboard(midimsg.note)
+    out += "\u00a7c\u258F"
+    out += drawKeyboard(128, midimsg.note + 1)
+    i += 1
+
+    return autocmd(out + '"}]}')
+
+
+def setBlock(x, y, z, _id, data=0):
+    return autocmd("setblock {0} {1} {2} {3} {4}".format(x, y, z, _id, data))
+
+
+def getPage(_list, page):
+    maxpage = math.ceil(len(_list) / 10)
+    if page > maxpage:
+        return None
+    start = (page - 1) * 10
+    out = _list[start:start + 10]
+    return {
+        'start': start,
+        'entries': out,
+        'page': page,
+        'maxpage': maxpage
+    }
+
+
+async def printEntries(ws, entries):
+    if entries is not None:
+        try:
+            start = entries['start']
+            for i in range(10):
+                await ws.send(info(ref_strings.list_format.format(i + start, entries['entries'][i])))
+            await ws.send(info(ref_strings.pagenum_format.format(
+                entries['page'], entries['maxpage'])))
+        except IndexError:
+            return
+    else:
+        await ws.send(error(ref_strings.page_error))
+
+
+def runmain(coroutine):
+    try:
+        coroutine.send(None)
+    except StopIteration as e:
+        return e.value
+
+
+suffix = ['', 'K', 'M', 'G', 'T', 'P', 'E', 'Z', 'Y']
+
+
+def toSI(n, binaryMode=False):
+    if n < 1000:
+        return "{0:.3g} ".format(n)
+    if binaryMode:
+        k = 1024
+    else:
+        k = 1000
+    for i in suffix:
+        if n < k:
+            if binaryMode:
+                return "{0:.3g} {1}i".format(n, i)
+            else:
+                return "{0:.3g} {1}".format(n, i)
+
+        n /= k
+
+
+def fileSize(filename):
+    size = os.path.getsize(filename)
+    return toSI(size, True) + 'B'
+
+
+def formatNumber(n):
+    if n == 0:
+        return ''
+    else:
+        return '{:.4n}'.format(n)
