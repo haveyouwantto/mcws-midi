@@ -3,7 +3,6 @@ import threading
 import time
 
 import mido
-import numpy as np
 
 import instruments_map
 import drum_set
@@ -283,9 +282,9 @@ class MidiPlayer(threading.Thread, FileIOModule):
                     note['pitch'], inst_name, 75, 0))
 
     def play_midi(self):
-        inst = np.zeros(16, dtype='uint8')
-        pan = np.zeros(16, dtype='uint8')
-        channel_volume = np.ones(16)
+        inst = [0]*16
+        pan =  [0]*16
+        channel_volume = [1]*16
         for msg in self.mid.play():
             if (not self.playing) or self.isClosed:
                 self.isPlaying = False
