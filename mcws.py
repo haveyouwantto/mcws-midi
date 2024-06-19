@@ -59,7 +59,6 @@ class MCWS:
                     if i not in module.config:
                         module.config[i] = module.default_config[i]
 
-            message_utils.log_command = self.config['debug']
         else:
             for module in self.modules:
                 self.modules[module].config = self.modules[module].default_config
@@ -73,7 +72,6 @@ class MCWS:
                 self.config['modules'][module.module_id] = module.config
             except:
                 pass
-        self.config['debug'] = message_utils.log_command
         return self.config
     
     def save(self):
