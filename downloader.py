@@ -1,29 +1,25 @@
-import urllib.request
-import os
+import requests
 
-image = ('image/png', 'image/jpeg', 'image/bmp', 'image/webp', 'image/gif')
-midi= ('audio/mid','audio/midi')
+midi_mimetypes = ('audio/mid', 'audio/midi')
 
-def download(url, name, mime):
+def download(url, mime):
     try:
         if not (url.startswith('http://') or url.startswith('https://')):
-            url = 'http://'+url
-        request = urllib.request.Request(url)
-        response = urllib.request.urlopen(request)
-        if response.info()['Content-Type'] not in mime:
-            return (1,response.info()['Content-Type'])
-        filename = "cache/" + name
-        if (response.getcode() == 200):
+            url = 'http://' + url
+        response = requests.get(url)
+        
+        if response.headers['Content-Type'] not in mime:
+            return (1, response.headers['Content-Type'])
+
+        filename = "midi/cache"
+        
+        if response.status_code == 200:
             with open(filename, "wb") as f:
-                f.write(response.read())  # 将内容写入图片
+                f.write(response.content)  # 将内容写入文件
             return (0,)
-    except:
+    except Exception as e:
+        print(e)
         return (-1,)
 
-
-def download_image(url):
-    return download(url,'img' ,image)
-
-
 def download_midi(url):
-    return download(url,'midi', midi)
+    return download(url, midi_mimetypes)

@@ -13,7 +13,7 @@ from basic_module import Command, FileIOModule
 import downloader
 import message_utils
 
-palette = 'ca1edb62574398ff'
+palette = 'abcdef123456789f'
 
 insts = [
     'note.harp',
@@ -166,19 +166,20 @@ class MidiPlayer(threading.Thread, FileIOModule):
             self.config['loop'] = 'song'
         elif args[0] == 'all':
             self.config['loop'] = 'all'
+        await self.ws.send(message_utils.info(ref_strings.midiplayer.looping.format(self.config['loop'])))
 
     async def from_url(self, args):
-        await self.ws.send(message_utils.info(ref_strings.pixel.download_image.format(args[0])))
+        # await self.ws.send(message_utils.info(ref_strings.pixel.download_image.format(args[0])))
         if len(args) == 0:
             return
         code = downloader.download_midi(args[0])
         if code[0] == -1:
-            await self.ws.send(message_utils.error(ref_strings.pixel.web_error.format(args[0])))
+            # await self.ws.send(message_utils.error(ref_strings.pixel.web_error.format(args[0])))
             return
         if code[0] == 1:
-            await self.ws.send(message_utils.error(ref_strings.pixel.mime_error.format(code[1])))
+            # await self.ws.send(message_utils.error(ref_strings.pixel.mime_error.format(code[1])))
             return
-        await self.open('files/cache/midi')
+        await self.open('midi/cache')
 
     async def show_playing(self, args):
         if self.playing:
@@ -372,7 +373,7 @@ class MidiPlayer(threading.Thread, FileIOModule):
     async def open(self, index, stop=True):
         if self.playing and stop:
             await self.stop()
-        filename = self.file_list[index]
+        filename = self.file_list[index] if type(index) == int else index
         await self.ws.send(
             message_utils.info(
                 ref_strings.midiplayer.load_song.format(self.index, filename, message_utils.fileSize(filename))))

@@ -61,3 +61,4 @@ class midiplayer:
     by_pitch_enable = '音高决定声音位置: 开启'
     by_pitch_disable = '音高决定声音位置: 关闭'
     playing = '正在播放: [\u00a7c{0}\u00a7r] - {1}'
+    looping = '循环模式: {0}'
